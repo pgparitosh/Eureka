@@ -1,6 +1,12 @@
 import React, { Component } from "react";
-import { Image, StyleSheet, ScrollView, TextInput } from "react-native";
-import Slider from "react-native-slider";
+import {
+  Image,
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  Platform
+} from "react-native";
+import * as Icon from "@expo/vector-icons";
 
 import { Divider, Button, Block, Text, Switch } from "../components";
 import { theme, mocks } from "../constants";
@@ -51,6 +57,8 @@ class Settings extends Component {
 
   render() {
     const { profile, editing } = this.state;
+    if (profile === {}) return null;
+    // const registeredDevices = profile.registeredDevices;
 
     return (
       <Block>
@@ -58,117 +66,127 @@ class Settings extends Component {
           <Text h2 bold>
             Settings
           </Text>
-          <Button>
-            <Image source={profile.avatar} style={styles.avatar} />
-          </Button>
         </Block>
 
         <ScrollView showsVerticalScrollIndicator={false}>
           <Block style={styles.inputs}>
-            <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
-              <Block>
-                <Text gray2 style={{ marginBottom: 10 }}>
-                  Username
-                </Text>
-                {this.renderEdit("username")}
+            <Button>
+              <Block row center space="between">
+                <Text semibold>Profile and Preferences</Text>
+                <Icon.Ionicons
+                  style={{ marginRight: 10 }}
+                  color={theme.colors.gray}
+                  size={theme.sizes.font * 1.5}
+                  name={Platform.OS === "ios" ? "ios-contact" : "md-contact"}
+                />
               </Block>
-            </Block>
-            <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
-              <Block>
-                <Text gray2 style={{ marginBottom: 10 }}>
-                  Location
-                </Text>
-                {this.renderEdit("location")}
-              </Block>
-              <Text
-                medium
-                secondary
-                onPress={() => this.toggleEdit("location")}
-              >
-                {editing === "location" ? "Save" : "Edit"}
-              </Text>
-            </Block>
-            <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
-              <Block>
-                <Text gray2 style={{ marginBottom: 10 }}>
-                  E-mail
-                </Text>
-                <Text bold>{profile.email}</Text>
-              </Block>
-            </Block>
-          </Block>
-
-          <Divider margin={[theme.sizes.base, theme.sizes.base * 2]} />
-
-          <Block style={styles.sliders}>
-            <Block margin={[10, 0]}>
-              <Text gray2 style={{ marginBottom: 10 }}>
-                Budget
-              </Text>
-              <Slider
-                minimumValue={0}
-                maximumValue={1000}
-                style={{ height: 19 }}
-                thumbStyle={styles.thumb}
-                trackStyle={{ height: 6, borderRadius: 6 }}
-                minimumTrackTintColor={theme.colors.secondary}
-                maximumTrackTintColor="rgba(157, 163, 180, 0.10)"
-                value={this.state.budget}
-                onValueChange={value => this.setState({ budget: value })}
-              />
-              <Text caption gray right>
-                $1,000
-              </Text>
-            </Block>
-            <Block margin={[10, 0]}>
-              <Text gray2 style={{ marginBottom: 10 }}>
-                Monthly Cap
-              </Text>
-              <Slider
-                minimumValue={0}
-                maximumValue={5000}
-                style={{ height: 19 }}
-                thumbStyle={styles.thumb}
-                trackStyle={{ height: 6, borderRadius: 6 }}
-                minimumTrackTintColor={theme.colors.secondary}
-                maximumTrackTintColor="rgba(157, 163, 180, 0.10)"
-                value={this.state.monthly}
-                onValueChange={value => this.setState({ monthly: value })}
-              />
-              <Text caption gray right>
-                $5,000
-              </Text>
-            </Block>
+            </Button>
           </Block>
 
           <Divider />
 
-          <Block style={styles.toggles}>
-            <Block
-              row
-              center
-              space="between"
-              style={{ marginBottom: theme.sizes.base * 2 }}
-            >
-              <Text gray2>Notifications</Text>
-              <Switch
-                value={this.state.notifications}
-                onValueChange={value => this.setState({ notifications: value })}
-              />
-            </Block>
+          <Block style={styles.operations}>
+            <Button>
+              <Block row center space="between">
+                <Text semibold>Subscription Details</Text>
+                <Icon.Ionicons
+                  style={{ marginRight: 10 }}
+                  color={theme.colors.gray}
+                  size={theme.sizes.font * 1.5}
+                  name={Platform.OS === "ios" ? "ios-card" : "md-card"}
+                />
+              </Block>
+            </Button>
+          </Block>
 
-            <Block
-              row
-              center
-              space="between"
-              style={{ marginBottom: theme.sizes.base * 2 }}
-            >
-              <Text gray2>Newsletter</Text>
-              <Switch
-                value={this.state.newsletter}
-                onValueChange={value => this.setState({ newsletter: value })}
-              />
-            </Block>
+          <Divider />
+
+          <Block style={styles.operations}>
+            <Button>
+              <Block row center space="between">
+                <Text semibold>Registered Devices</Text>
+                <Icon.Ionicons
+                  style={{ marginRight: 10 }}
+                  color={theme.colors.gray}
+                  size={theme.sizes.font * 1.5}
+                  name={
+                    Platform.OS === "ios"
+                      ? "ios-phone-portrait"
+                      : "md-phone-portrait"
+                  }
+                />
+              </Block>
+            </Button>
+          </Block>
+
+          <Divider />
+
+          <Block style={styles.operations}>
+            <Button>
+              <Block row center space="between">
+                <Text semibold>Help and Support</Text>
+                <Icon.Ionicons
+                  style={{ marginRight: 10 }}
+                  color={theme.colors.gray}
+                  size={theme.sizes.font * 1.5}
+                  name={Platform.OS === "ios" ? "ios-help" : "md-help"}
+                />
+              </Block>
+            </Button>
+          </Block>
+
+          <Divider />
+
+          <Block style={styles.operations}>
+            <Button>
+              <Block row center space="between">
+                <Text semibold>Feedback</Text>
+                <Icon.Ionicons
+                  style={{ marginRight: 10 }}
+                  color={theme.colors.gray}
+                  size={theme.sizes.font * 1.5}
+                  name={Platform.OS === "ios" ? "ios-paper" : "md-paper"}
+                />
+              </Block>
+            </Button>
+          </Block>
+
+          <Divider />
+
+          <Block style={styles.operations}>
+            <Button>
+              <Block row center space="between">
+                <Text semibold>Report a Bug</Text>
+                <Icon.Ionicons
+                  style={{ marginRight: 10 }}
+                  color={theme.colors.gray}
+                  size={theme.sizes.font * 1.5}
+                  name={Platform.OS === "ios" ? "ios-bug" : "md-bug"}
+                />
+              </Block>
+            </Button>
+          </Block>
+
+          <Divider />
+
+          <Block style={styles.operations}>
+            <Button onPress={() => this.props.navigation.navigate("Welcome")}>
+              <Block
+                row
+                center
+                space="between"
+              >
+                <Text semibold color={"red"}>
+                  Logout
+                </Text>
+                <Icon.Ionicons
+                  style={{ marginRight: 10 }}
+                  color={theme.colors.accent}
+                  size={theme.sizes.font * 1.5}
+                  name={Platform.OS === "ios" ? "ios-power" : "md-power"}
+                />
+              </Block>
+            </Button>
           </Block>
         </ScrollView>
       </Block>
@@ -194,6 +212,10 @@ const styles = StyleSheet.create({
     marginTop: theme.sizes.base * 0.7,
     paddingHorizontal: theme.sizes.base * 2
   },
+  operations: {
+    // marginTop: 10,
+    paddingHorizontal: theme.sizes.base * 2
+  },
   inputRow: {
     alignItems: "flex-end"
   },
@@ -210,6 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.secondary
   },
   toggles: {
+    marginTop: 10,
     paddingHorizontal: theme.sizes.base * 2
   }
 });

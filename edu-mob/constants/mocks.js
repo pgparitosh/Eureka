@@ -98,6 +98,7 @@ const profile = {
   monthly_cap: 5000,
   notifications: true,
   newsletter: false,
+  registeredDevices: ['Redmi Note 7 Pro', 'Samsung Galaxy S9'],
 };
 
 const coursesList = [
