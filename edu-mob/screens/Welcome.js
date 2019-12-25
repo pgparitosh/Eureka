@@ -201,10 +201,10 @@ class Welcome extends Component {
             <Text center semibold white>Login with Facebook</Text>
           </Button>
           <Button gradient onPress={() => navigation.navigate('Login')}>
-            <Text center semibold white>Login using Email</Text>
+            <Text center semibold white>Login using Mobile No</Text>
           </Button>
           <Button shadow onPress={() => navigation.navigate('SignUp')}>
-            <Text center semibold>Signup using Email</Text>
+            <Text center semibold>Signup using Mobile No</Text>
           </Button>
           <Button onPress={() => this.setState({ showTerms: true })}>
             <Text center caption gray>Terms of service</Text>

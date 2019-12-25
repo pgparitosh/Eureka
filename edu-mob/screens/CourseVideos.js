@@ -1,21 +1,21 @@
 import React, { Component } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
   StyleSheet,
   ScrollView,
   FlatList,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   Alert
 } from "react-native";
 import { Block, Text, Card, Button } from "../components";
-import { theme, mocks } from "../constants";
-import { Notifications, Constants } from "expo";
+import { theme, mocks, applicaitonConstants } from "../constants";
+import { Notifications } from "expo";
 import * as FileSystem from "expo-file-system";
 import * as Permissions from "expo-permissions";
 import Toast, { DURATION } from "react-native-easy-toast";
-import * as WebBrowser from "expo-web-browser";
+import { colors } from "../constants/theme";
 
 const { width } = Dimensions.get("window");
 
@@ -27,24 +27,68 @@ async function getiOSNotificationPermission() {
 }
 
 class CourseVideos extends Component {
+  isDownloadPage = null;
+
   constructor(props) {
     super(props);
     this.listenForNotifications = this.listenForNotifications.bind(this);
     this.openFile = this.openFile.bind(this);
     this.getDownloadedFiles = this.getDownloadedFiles.bind(this);
+    this.getAllDownloadedFiles = this.getAllDownloadedFiles.bind(this);
   }
 
   state = {
     videos: [],
     filePreviewText: "",
     downloadedFiles: [],
-    selected: false
+    selected: false,
+    loading: false
   };
 
   async componentDidMount() {
     // make a service call to get all the videos for the particular course
-    // this.setState({ videos: mocks.videos });
-    this.getDownloadedFiles();
+    const { params } = this.props.parentNav.state;
+    isDownloadPage = params.isDownloadPage;
+    if (!isDownloadPage) {
+      this.setState({ videos: mocks.videos });
+      this.getDownloadedFiles();
+    } else {
+      this.getAllDownloadedFiles();
+    }
+  }
+
+  async getAllDownloadedFiles() {
+    videos = [];
+    allFileNames = [];
+    await FileSystem.readDirectoryAsync(FileSystem.documentDirectory)
+      .then(files => {
+        files.forEach(function(value, index) {
+          var fileNamePieces = value.split(/[\s.]+/);
+          allFileNames.push(fileNamePieces[0]);
+        });
+        var uniqueFiles = allFileNames.filter(function(item, pos) {
+          return files.indexOf(item) == pos;
+        });
+        uniqueFiles.forEach(function(value, index) {
+          FileSystem.readAsStringAsync(value + ".txt")
+            .then(content => {
+              var video = {
+                videoId: index + 1,
+                videoTitle: content,
+                thumbnailUrl: value + ".png",
+                availableOffline: true,
+                offlineUrl: value + ".mp4"
+              };
+              videos.push(video);
+            })
+            .catch(error => console.log(error));
+        });
+      })
+      .catch(error => console.log(error));
+    this.setState({
+      videos: videos,
+      selected: false
+    });
   }
 
   async getDownloadedFiles() {
@@ -66,7 +110,19 @@ class CourseVideos extends Component {
           this.setState({
             downloadedFiles: files,
             videos: vids,
-            selected: !this.state.selected
+            selected: false
+          });
+          console.log(files);
+        } else {
+          // for the last download, the flatlist would not re render
+          vids.forEach(element => {
+            element.availableOffline = false;
+            element.offlineUrl = "";
+          });
+          this.setState({
+            downloadedFiles: files,
+            videos: vids,
+            selected: false
           });
         }
       })
@@ -78,20 +134,87 @@ class CourseVideos extends Component {
     return urlPieces[urlPieces.length - 1];
   }
 
+  getFileNameWithoutExtenstion(fileName) {
+    return fileName
+      .split(".")
+      .slice(0, -1)
+      .join(".");
+  }
+
   handleDownload(item) {
-    var alertMessage = "";
+    let vids = this.state.videos;
+    vids.forEach(vid => {
+      if (vid.videoId === item.videoId) {
+        item.isDownloading = true;
+        return false;
+      }
+    });
+    this.setState({ videos: vids });
     if (item.availableOffline) {
+      // delete the thumbnail
+      FileSystem.deleteAsync(
+        this.getFileNameWithoutExtenstion(item.offlineUrl) + ".png"
+      )
+        .then(() => {})
+        .catch(error => console.log(error));
+
+      //delete the text file
+      FileSystem.deleteAsync(
+        this.getFileNameWithoutExtenstion(item.offlineUrl) + ".txt"
+      )
+        .then(() => {})
+        .catch(error => console.log(error));
+
+      // delete the video
       FileSystem.deleteAsync(item.offlineUrl)
         .then(() => {
           Alert.alert("Download removed successfully");
           this.getDownloadedFiles()
-            .then(() => {})
-            .catch(error => console.log(error));
+            .then(() => {
+              vids = this.state.videos;
+              vids.forEach(vid => {
+                if (vid.videoId === item.videoId) {
+                  item.isDownloading = false;
+                  return false;
+                }
+              });
+              this.setState({ videos: vids });
+            })
+            .catch(error => {
+              vids = this.state.videos;
+              vids.forEach(vid => {
+                if (vid.videoId === item.videoId) {
+                  item.isDownloading = false;
+                  return false;
+                }
+              });
+              this.setState({ videos: vids });
+              console.log(error);
+            });
         })
         .catch(error => console.log(error));
     } else {
       let fileName = this.getFileName(item.videoUrl);
+      let thumbnailUri =
+        FileSystem.documentDirectory +
+        this.getFileNameWithoutExtenstion(fileName) +
+        ".png";
       let fileUri = FileSystem.documentDirectory + fileName;
+      let metadataUri =
+        FileSystem.documentDirectory +
+        this.getFileNameWithoutExtenstion(fileName) +
+        ".txt";
+      // Start the download for thumbnail first
+      FileSystem.downloadAsync(item.thumbnailUrl, thumbnailUri)
+        .then(({ uri }) => {})
+        .catch(error => console.log(error));
+
+      // Create a text file to contain the meta data of the file
+      FileSystem.writeAsStringAsync(metadataUri, (item.videoTitle + applicaitonConstants.saltSeparator + item.videoDesc))
+        .then(() => {})
+        .catch(error => console.log(error));
+
+      // Download the video file and show notification to the user
       FileSystem.downloadAsync(item.videoUrl, fileUri)
         .then(({ uri }) => {
           console.log("Finished downloading to ", uri);
@@ -123,8 +246,24 @@ class CourseVideos extends Component {
           this.getDownloadedFiles()
             .then(() => {})
             .catch(error => console.log(error));
+          vids = this.state.videos;
+          vids.forEach(vid => {
+            if (vid.videoId === item.videoId) {
+              item.isDownloading = false;
+              return false;
+            }
+          });
+          this.setState({ videos: vids });
         })
         .catch(error => {
+          vids = this.state.videos;
+          vids.forEach(vid => {
+            if (vid.videoId === item.videoId) {
+              item.isDownloading = false;
+              return false;
+            }
+          });
+          this.setState({ videos: vids });
           console.error(error);
           Alert.alert(error);
         });
@@ -214,9 +353,13 @@ class CourseVideos extends Component {
                     </Text>
                   </Button>
                   <Button shadow onPress={() => this.handleDownload(item)}>
-                    <Text center semibold>
-                      {item.availableOffline ? "Remove Download" : "Download"}
-                    </Text>
+                    {item.isDownloading ? (
+                      <ActivityIndicator size="small" color={colors.primary} />
+                    ) : (
+                      <Text center semibold>
+                        {item.availableOffline ? "Remove Download" : "Download"}
+                      </Text>
+                    )}
                   </Button>
                 </Block>
               </Card>

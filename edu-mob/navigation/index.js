@@ -14,6 +14,7 @@ import VideoPlayerComp from '../screens/VideoPlayerComp';
 import PdfViewer from '../screens/PdfViewer';
 import Subscribe from '../screens/Subscribe';
 import BasicDetails from '../screens/BasicDetails';
+import Downloads from '../screens/Downloads';
 
 import { theme } from '../constants';
 
@@ -30,6 +31,7 @@ const screens = createStackNavigator({
   PdfViewer,
   Subscribe,
   BasicDetails,
+  Downloads
 }, {
   defaultNavigationOptions: {
     headerStyle: {

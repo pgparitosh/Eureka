@@ -8,51 +8,83 @@ import {
   Image,
   Dimensions
 } from "react-native";
+import Constants from "expo-constants";
 
 import { Button, Block, Input, Text } from "../components";
 import { theme } from "../constants";
+import AuthService from "../services/AuthService";
 
 const { width, height } = Dimensions.get("window");
 
 export default class SignUp extends Component {
   state = {
-    email: null,
-    username: null,
-    password: null,
+    mobile: '7405423686',
+    firstName: "Paritosh",
+    lastName: "Gohel",
+    password: "1111",
     errors: [],
     loading: false
   };
 
   handleSignUp() {
+    this.setState({ loading: true });
     const { navigation } = this.props;
-    const { email, username, password } = this.state;
+    const { mobile, password, firstName, lastName } = this.state;
     const errors = [];
 
     Keyboard.dismiss();
     this.setState({ loading: true });
 
     // check with backend API or with some static data
-    if (!email) errors.push("email");
-    if (!username) errors.push("username");
-    if (!password) errors.push("password");
+    if (mobile.trim() === "") errors.push("mobile");
+    if (password.trim() === "") errors.push("password");
+    if (firstName.trim() === "") errors.push("firstName");
+    if (lastName.trim() === "") errors.push("lastName");
 
     this.setState({ errors, loading: false });
 
     if (!errors.length) {
-      Alert.alert(
-        "Success!",
-        "Your account has been created",
-        [
-          {
-            text: "Continue",
-            onPress: () => {
-              navigation.navigate("Browse");
+      var inputObj = {
+        json: {
+          firstName: firstName,
+          lastName: lastName,
+          mobile: mobile,
+          password: password,
+          installation_id: Constants.installationId,
+          device_name: Constants.deviceName,
+        }
+      };
+      AuthService.signUp(JSON.stringify(inputObj)).then(res => {
+        if(res.status){
+        Alert.alert(
+          "Success!",
+          "Your account has been created",
+          [
+            {
+              text: "Continue",
+              onPress: () => {
+                navigation.navigate("Browse");
+              }
             }
-          }
-        ],
-        { cancelable: false }
-      );
+          ],
+          { cancelable: false }
+        );
+        }
+        else {
+          Alert.alert(
+            "Failed!",
+            res.message
+          );
+        }
+      }).catch((error) => {
+        console.log(error);
+        Alert.alert(
+          "Failed!",
+          "Something went wrong. Please try again after some time."
+        );
+      });
     }
+    this.setState({ loading: false });
   }
 
   render() {
@@ -66,8 +98,8 @@ export default class SignUp extends Component {
           <Text h2 bold>
             Sign Up
           </Text>
-          <Block middle>
-            <Image
+          <Block>
+            {/* <Image
               source={require("../assets/images/illustration_2.png")}
               resizeMode="contain"
               style={{
@@ -76,21 +108,28 @@ export default class SignUp extends Component {
                 alignSelf: "center",
                 marginBottom: 10
               }}
+            /> */}
+            <Input
+              label="First Name"
+              error={hasErrors("firstName")}
+              style={[styles.input, hasErrors("firstName")]}
+              defaultValue={this.state.firstName}
+              onChangeText={text => this.setState({ firstName: text })}
             />
             <Input
-              email
-              label="Email"
-              error={hasErrors("email")}
-              style={[styles.input, hasErrors("email")]}
-              defaultValue={this.state.email}
-              onChangeText={text => this.setState({ email: text })}
+              label="Last Name"
+              error={hasErrors("lastName")}
+              style={[styles.input, hasErrors("lastName")]}
+              defaultValue={this.state.lastName}
+              onChangeText={text => this.setState({ lastName: text })}
             />
             <Input
-              label="Username"
-              error={hasErrors("username")}
-              style={[styles.input, hasErrors("username")]}
-              defaultValue={this.state.username}
-              onChangeText={text => this.setState({ username: text })}
+              label="Mobile Number"
+              number
+              error={hasErrors("mobile")}
+              style={[styles.input, hasErrors("mobile")]}
+              defaultValue={this.state.mobile}
+              onChangeText={text => this.setState({ mobile: text })}
             />
             <Input
               secure

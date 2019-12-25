@@ -35,7 +35,7 @@ class CourseList extends Component {
             return <CourseDescription />;
         }
         else if(activeTab === 'Videos') {
-            return <CourseVideos parentNav={this.props.navigation}/>;
+            return <CourseVideos parentNav={this.props.navigation} isDownloadPage={false}/>;
         }
         else if(activeTab === 'Documents') {
             return <CourseDocuments parentNav={this.props.navigation}/>;

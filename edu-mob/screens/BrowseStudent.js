@@ -64,7 +64,7 @@ class BrowseStudent extends Component {
           </Block>
           <Block>
             <Block row center justifyContent="flex-end">
-              <Button onPress={() => navigation.navigate("Download")}>
+              <Button onPress={() => navigation.navigate("Downloads", {isDownloadPage: true})}>
                 <Icon.Ionicons
                   style={{ marginRight: 20, fontWeight: "bold" }}
                   size={theme.sizes.font * 1.7}

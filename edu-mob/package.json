@@ -10,6 +10,7 @@
   "dependencies": {
     "@expo/vector-icons": "^10.0.3",
     "abort-controller": "^3.0.0",
+    "axios": "^0.19.0",
     "csstype": "^2.6.6",
     "expo": "^33.0.0",
     "expo-asset": "^5.0.1",

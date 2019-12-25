@@ -5,49 +5,76 @@ import {
   KeyboardAvoidingView,
   StyleSheet,
   Image,
-  Dimensions
+  Dimensions,
+  Alert,
+  AsyncStorage
 } from "react-native";
+import Constants from "expo-constants";
 
+import AuthService from "../services/AuthService";
 import { Button, Block, Input, Text } from "../components";
 import { theme } from "../constants";
 
 const { width, height } = Dimensions.get("window");
 
-const VALID_EMAIL = "admin@edumob.in";
-const VALID_PASSWORD = "subscribe";
+const VALID_MOBILE = "111222333";
+const VALID_PASSWORD = "123456";
 
 export default class Login extends Component {
   state = {
-    email: VALID_EMAIL,
+    mobile: VALID_MOBILE,
     password: VALID_PASSWORD,
     errors: [],
     loading: false
   };
 
-  handleLogin() {
+  async handleLogin() {
     const { navigation } = this.props;
-    const { email, password } = this.state;
+    const { mobile, password } = this.state;
     const errors = [];
 
     Keyboard.dismiss();
     this.setState({ loading: true });
 
     // check with backend API or with some static data
-    if (email !== VALID_EMAIL) {
-      errors.push("email");
+    if (mobile.trim() === "") {
+      errors.push("mobile");
     }
-    if (password !== VALID_PASSWORD) {
+    if (password.trim() === "") {
       errors.push("password");
     }
 
-    this.setState({ errors, loading: false });
-
     if (!errors.length) {
       // Make service call. If service call is successful, navigate user to the application
-      // navigation.navigate("BrowseStudent");
-      navigation.navigate("BasicDetails");
-      // console.log("Success");
+      var inputObj = {
+        json: {
+          username: mobile,
+          password: password,
+          installation_id: Constants.installationId
+        }
+      };
+      AuthService.login(JSON.stringify(inputObj))
+        .then(res => {
+          if (res.status) {
+            // navigate the user to the main app
+            let apiKey = res.api_key;
+            AsyncStorage.setItem("userToken", apiKey)
+              .then(() => {
+                navigation.navigate("BasicDetails");
+              })
+              .catch(error => {
+                console.log(error);
+              });
+          } else {
+            Alert.alert(res.message);
+          }
+        })
+        .catch(error => {
+          console.log(error);
+          Alert.alert("An error has occured. Please try again.");
+        });
     }
+    this.setState({ errors, loading: false });
   }
 
   render() {
@@ -63,21 +90,22 @@ export default class Login extends Component {
           </Text>
           <Block middle>
             <Image
-              source={require('../assets/images/illustration_3.png')}
+              source={require("../assets/images/illustration_3.png")}
               resizeMode="contain"
               style={{
                 width,
                 height: height / 3,
-                alignSelf: 'center',
-                marginBottom: 10,
+                alignSelf: "center",
+                marginBottom: 10
               }}
             />
             <Input
-              label="Email"
-              error={hasErrors("email")}
-              style={[styles.input, hasErrors("email")]}
-              defaultValue={this.state.email}
-              onChangeText={text => this.setState({ email: text })}
+              label="Mobile Number"
+              error={hasErrors("mobile")}
+              number
+              style={[styles.input, hasErrors("mobile")]}
+              defaultValue={this.state.mobile}
+              onChangeText={text => this.setState({ mobile: text })}
             />
             <Input
               secure

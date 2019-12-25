@@ -197,6 +197,7 @@ const videos = [
     videoDesc: 'This video is intended to educate you on the basics of profit and loss. You would learn the fundamentals about what is profit and loss and the calculations behind it. By the end of the course you would be able to solve complex problems related to profit and loss on your own.',
     availableOffline: false,
     offlineUrl: '',
+    isDownloading: false,
   },
   {
     videoId: 2,
@@ -206,6 +207,17 @@ const videos = [
     videoDesc: 'This video is intended to educate you on the basics of profit and loss. You would learn the fundamentals about what is profit and loss and the calculations behind it. By the end of the course you would be able to solve complex problems related to profit and loss on your own.',
     availableOffline: false,
     offlineUrl: '',
+    isDownloading: false,
+  },
+  {
+    videoId: 3,
+    thumbnailUrl: 'http://www.abmintl.in/Images/pl.png',
+    videoUrl: 'http://mirrors.standaloneinstaller.com/video-sample/small.mp4',
+    videoTitle: 'Profit and Loss - Part 3',
+    videoDesc: 'This video is intended to educate you on the basics of profit and loss. You would learn the fundamentals about what is profit and loss and the calculations behind it. By the end of the course you would be able to solve complex problems related to profit and loss on your own.',
+    availableOffline: false,
+    offlineUrl: '',
+    isDownloading: false,
   },
 ];
 
