@@ -17,8 +17,8 @@ import { theme } from "../constants";
 
 const { width, height } = Dimensions.get("window");
 
-const VALID_MOBILE = "111222333";
-const VALID_PASSWORD = "123456";
+const VALID_MOBILE = "";
+const VALID_PASSWORD = "";
 
 export default class Login extends Component {
   state = {
@@ -50,7 +50,8 @@ export default class Login extends Component {
         json: {
           username: mobile,
           password: password,
-          installation_id: Constants.installationId
+          installation_id: Constants.installationId,
+          device_name: Constants.deviceName,
         }
       };
       AuthService.login(JSON.stringify(inputObj))

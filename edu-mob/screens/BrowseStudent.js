@@ -5,12 +5,16 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Platform
+  Platform,
+  AsyncStorage
 } from "react-native";
 import * as Icon from "@expo/vector-icons";
+import Constants from "expo-constants";
+import { DOMAIN } from '../constants/applicationConstants';
 
 import { Card, Badge, Button, Block, Text } from "../components";
 import { theme, mocks } from "../constants";
+import CoursesService from "../services/CoursesService";
 
 const { width } = Dimensions.get("window");
 
@@ -20,15 +24,54 @@ class BrowseStudent extends Component {
     categories: []
   };
 
-  componentDidMount() {
-    this.setState({ categories: this.props.categories });
+  async componentDidMount() {
+    await AsyncStorage.getItem("userToken")
+      .then(userToken => {
+        var inputObj = {
+          json: {
+            api_key: userToken,
+            installation_id: Constants.installationId,
+            device_name: Constants.deviceName
+          }
+        };
+        CoursesService.getCourseList(inputObj)
+          .then(res => {
+            var rawCourses = res.data;
+            var allSubjects = [];
+            rawCourses.forEach(element => {
+              var subject = {
+                id: element.coursesid,
+                name: element.name,
+                image:
+                  DOMAIN +
+                  element.icon_path +
+                  element.course_icon +
+                  "?random_number=" +
+                  new Date().getTime(),
+                count: element.chapter_count
+              };
+              allSubjects.push(subject);
+            });
+            this.setState({ categories: allSubjects });
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      })
+      .catch(err => {
+        console.log(err);
+        const parentNav = this.props.navigation.dangerouslyGetParent();
+        AsyncStorage.clear().then(() => {
+          parentNav.navigate("AuthLoading");
+        });
+      });
   }
 
   handleTab = tab => {
-    const { categories, mycourses } = this.props;
-    if (tab === "My Courses")
-      this.setState({ active: tab, categories: mycourses });
-    else this.setState({ active: tab, categories: categories });
+    // const { categories, mycourses } = this.props;
+    // if (tab === "My Courses")
+    //   this.setState({ active: tab, categories: mycourses });
+    // else this.setState({ active: tab, categories: categories });
   };
 
   renderTab(tab) {
@@ -49,14 +92,14 @@ class BrowseStudent extends Component {
   }
 
   render() {
-    const { profile, navigation } = this.props;
+    const { navigation } = this.props;
     const { categories } = this.state;
-    const tabs = ["Explore Courses", "My Courses"];
-
+    const tabs = ["Explore Courses"];
+    // the current tab structure contains only one tab for expolre courses.
+    // this is for scalability to include my courses tab if needed in future
     return (
       <Block>
         <Block flex={false} row center space="between" style={styles.header}>
-          {/* <Image source={require('../assets/icons/back.png')} /> */}
           <Block>
             <Text h2 bold>
               Browse
@@ -87,10 +130,6 @@ class BrowseStudent extends Component {
 
         <Block flex={false} row space="between" style={styles.tabs}>
           {tabs.map(tab => this.renderTab(tab))}
-          <Image
-            source={require("../assets/icons/search.png")}
-            style={{ height: 22, width: 22, marginVertical: 5 }}
-          />
         </Block>
 
         <ScrollView
@@ -100,7 +139,7 @@ class BrowseStudent extends Component {
           <Block flex={false} row space="between" style={styles.categories}>
             {categories.map(category => (
               <TouchableOpacity
-                key={category.name}
+                key={category.id}
                 onPress={() => navigation.navigate("CourseList", { category })}
               >
                 <Card center middle shadow style={styles.category}>
@@ -110,7 +149,7 @@ class BrowseStudent extends Component {
                     color="rgba(41,216,143,0.20)"
                   >
                     <Image
-                      source={category.image}
+                      source={{uri: category.image}}
                       style={{ height: 30, width: 30 }}
                     />
                   </Badge>

@@ -7,13 +7,18 @@ import {
   ScrollView,
   FlatList,
   TouchableWithoutFeedback,
-  Alert
+  Alert,
+  AsyncStorage
 } from "react-native";
+import Constants from "expo-constants";
+import { DOMAIN, AWS_DOMAIN } from "../constants/applicationConstants";
 import { Block, Text, Card, Button } from "../components";
 import { theme, mocks, applicaitonConstants } from "../constants";
 import { Notifications } from "expo";
 import * as FileSystem from "expo-file-system";
 import * as Permissions from "expo-permissions";
+
+import CoursesService from "../services/CoursesService";
 import Toast, { DURATION } from "react-native-easy-toast";
 import { colors } from "../constants/theme";
 
@@ -48,13 +53,62 @@ class CourseVideos extends Component {
   async componentDidMount() {
     // make a service call to get all the videos for the particular course
     const { params } = this.props.parentNav.state;
-    isDownloadPage = params.isDownloadPage;
-    if (!isDownloadPage) {
-      this.setState({ videos: mocks.videos });
-      this.getDownloadedFiles();
-    } else {
-      this.getAllDownloadedFiles();
-    }
+    const course = params.course;
+
+    await AsyncStorage.getItem("userToken")
+      .then(userToken => {
+        var inputObj = {
+          json: {
+            api_key: userToken,
+            installation_id: Constants.installationId,
+            device_name: Constants.deviceName,
+            chapter_id: course.id
+          }
+        };
+        CoursesService.getVideosList(inputObj)
+          .then(res => {
+            var rawVideos = res.data;
+            var allVideos = [];
+            if (rawVideos && rawVideos.length > 0) {
+              rawVideos.forEach(element => {
+                var video = {
+                  videoId: element.video_id,
+                  videoTitle: element.title,
+                  videoDesc: element.description,
+                  thumbnailUrl:
+                    DOMAIN +
+                    element.thumbnail_path +
+                    "?random_number=" +
+                    new Date().getTime(),
+                  videoUrl: AWS_DOMAIN + element.video_path,
+                  availableOffline: false,
+                  isDownloading: false,
+                  offlineUrl: ""
+                };
+                allVideos.push(video);
+              });
+              this.setState({
+                videos: allVideos
+              });
+              this.getDownloadedFiles();
+            } else {
+              this.setState({
+                videos: []
+              });
+              this.getDownloadedFiles();
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      })
+      .catch(err => {
+        console.log(err);
+        const parentNav = this.props.navigation.dangerouslyGetParent();
+        AsyncStorage.clear().then(() => {
+          parentNav.navigate("AuthLoading");
+        });
+      });
   }
 
   async getAllDownloadedFiles() {
@@ -93,40 +147,42 @@ class CourseVideos extends Component {
 
   async getDownloadedFiles() {
     var vids = this.state.videos;
-    if (vids === null || vids.length === 0) vids = mocks.videos;
-    await FileSystem.readDirectoryAsync(FileSystem.documentDirectory)
-      .then(files => {
-        if (files.length > 0) {
-          vids.forEach(element => {
-            var fileName = this.getFileName(element.videoUrl);
-            if (files.indexOf(fileName) > -1) {
-              element.availableOffline = true;
-              element.offlineUrl = FileSystem.documentDirectory + fileName;
-            } else {
+    if (vids !== null && vids.length > 0) {
+      console.log(vids);
+      await FileSystem.readDirectoryAsync(FileSystem.documentDirectory)
+        .then(files => {
+          if (files.length > 0) {
+            vids.forEach(element => {
+              var fileName = this.getFileName(element.videoUrl);
+              if (files.indexOf(fileName) > -1) {
+                element.availableOffline = true;
+                element.offlineUrl = FileSystem.documentDirectory + fileName;
+              } else {
+                element.availableOffline = false;
+                element.offlineUrl = "";
+              }
+            });
+            this.setState({
+              downloadedFiles: files,
+              videos: vids,
+              selected: false
+            });
+            console.log(files);
+          } else {
+            // for the last download, the flatlist would not re render
+            vids.forEach(element => {
               element.availableOffline = false;
               element.offlineUrl = "";
-            }
-          });
-          this.setState({
-            downloadedFiles: files,
-            videos: vids,
-            selected: false
-          });
-          console.log(files);
-        } else {
-          // for the last download, the flatlist would not re render
-          vids.forEach(element => {
-            element.availableOffline = false;
-            element.offlineUrl = "";
-          });
-          this.setState({
-            downloadedFiles: files,
-            videos: vids,
-            selected: false
-          });
-        }
-      })
-      .catch(error => console.log(error));
+            });
+            this.setState({
+              downloadedFiles: files,
+              videos: vids,
+              selected: false
+            });
+          }
+        })
+        .catch(error => console.log(error));
+    }
   }
 
   getFileName(url) {
@@ -210,7 +266,10 @@ class CourseVideos extends Component {
         .catch(error => console.log(error));
 
       // Create a text file to contain the meta data of the file
-      FileSystem.writeAsStringAsync(metadataUri, (item.videoTitle + applicaitonConstants.saltSeparator + item.videoDesc))
+      FileSystem.writeAsStringAsync(
+        metadataUri,
+        item.videoTitle + applicaitonConstants.saltSeparator + item.videoDesc
+      )
         .then(() => {})
         .catch(error => console.log(error));
 

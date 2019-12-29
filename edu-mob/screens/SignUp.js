@@ -18,10 +18,10 @@ const { width, height } = Dimensions.get("window");
 
 export default class SignUp extends Component {
   state = {
-    mobile: '7405423686',
-    firstName: "Paritosh",
-    lastName: "Gohel",
-    password: "1111",
+    mobile: '',
+    firstName: "",
+    lastName: "",
+    password: "",
     errors: [],
     loading: false
   };
@@ -46,8 +46,8 @@ export default class SignUp extends Component {
     if (!errors.length) {
       var inputObj = {
         json: {
-          firstName: firstName,
-          lastName: lastName,
+          firstname: firstName,
+          lastname: lastName,
           mobile: mobile,
           password: password,
           installation_id: Constants.installationId,

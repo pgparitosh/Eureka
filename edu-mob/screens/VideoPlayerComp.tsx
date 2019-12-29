@@ -849,7 +849,7 @@ export default class VideoPlayerComp extends React.Component<Props, State> {
                             ]}>
                             {this.getMMSSFromMillis(this.state.playbackInstanceDuration)}
                         </Text>
-                        <Picker
+                        {/* <Picker
                             selectedValue={this.state.playbackSpeed}
                             style={[textStyle, { height: 20, width: 70, margin: 5, marginBottom: 10, backgroundColor: 'transparent' }]}
                             onValueChange={(itemValue, itemIndex) =>
@@ -861,7 +861,7 @@ export default class VideoPlayerComp extends React.Component<Props, State> {
                             <Picker.Item label="1.5 x" value={1.5} />
                             <Picker.Item label="2 x" value={2} />
                             <Picker.Item label="4 x" value={4} />
-                        </Picker>
+                        </Picker> */}
                         {/* Fullscreen control */}
                         {showFullscreenButton &&
                             <Control

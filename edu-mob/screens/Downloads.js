@@ -20,6 +20,7 @@ export default class Downloads extends Component {
   constructor(props) {
     super(props);
     this.getAllDownloadedFiles = this.getAllDownloadedFiles.bind(this);
+    this.playVideoComp = this.playVideoComp.bind(this);
   }
 
   state = {
@@ -29,6 +30,12 @@ export default class Downloads extends Component {
 
   componentDidMount() {
     this.getAllDownloadedFiles();
+  }
+
+  playVideoComp(item) {
+    this.props.navigation.navigate("VideoPlayerComp", {
+      url: item.offlineUrl
+    });
   }
 
   async getAllDownloadedFiles() {
@@ -47,8 +54,9 @@ export default class Downloads extends Component {
             FileSystem.documentDirectory + value + ".txt"
           )
             .then(content => {
-
-              var titleAndDesc = content.split(applicaitonConstants.saltSeparator);
+              var titleAndDesc = content.split(
+                applicaitonConstants.saltSeparator
+              );
 
               var video = {
                 videoId: index + 1,
@@ -143,7 +151,7 @@ export default class Downloads extends Component {
     }
     return (
       <Block style={{ flex: 1, marginLeft: 10 }}>
-        <Text h2 bold style={{marginLeft: 10, marginBottom: 15}}>
+        <Text h2 bold style={{ marginLeft: 10, marginBottom: 15 }}>
           All Downloads
         </Text>
         <ScrollView showsVerticalScrollIndicator={false}>

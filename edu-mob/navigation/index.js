@@ -51,6 +51,14 @@ const screens = createStackNavigator({
       alignItems: 'center',
       paddingRight: theme.sizes.base,
     },
+    // headerRight: () => (
+    //   <Image
+    //     style={{ height: 30, width: 150, marginRight: 10 }}
+    //     resizeMode="stretch"
+    //     resizeMethod="resize"
+    //     source={require("../assets/header-right.png")}
+    //   />
+    // )
   }
 });
 
