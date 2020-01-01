@@ -148,7 +148,6 @@ class CourseVideos extends Component {
   async getDownloadedFiles() {
     var vids = this.state.videos;
     if (vids !== null && vids.length > 0) {
-      console.log(vids);
       await FileSystem.readDirectoryAsync(FileSystem.documentDirectory)
         .then(files => {
           if (files.length > 0) {
@@ -167,7 +166,6 @@ class CourseVideos extends Component {
               videos: vids,
               selected: false
             });
-            console.log(files);
           } else {
             // for the last download, the flatlist would not re render
             vids.forEach(element => {
@@ -224,7 +222,7 @@ class CourseVideos extends Component {
       // delete the video
       FileSystem.deleteAsync(item.offlineUrl)
         .then(() => {
-          Alert.alert("Download removed successfully");
+          Alert.alert("Success!", "Download removed successfully");
           this.getDownloadedFiles()
             .then(() => {
               vids = this.state.videos;
@@ -301,7 +299,7 @@ class CourseVideos extends Component {
             localnotification,
             schedulingOptions
           );
-          Alert.alert("File Downloaded Successfully");
+          Alert.alert("Success!", "File Downloaded Successfully");
           this.getDownloadedFiles()
             .then(() => {})
             .catch(error => console.log(error));
@@ -324,7 +322,7 @@ class CourseVideos extends Component {
           });
           this.setState({ videos: vids });
           console.error(error);
-          Alert.alert(error);
+          Alert.alert("Failed!", error);
         });
     }
   }
@@ -338,7 +336,6 @@ class CourseVideos extends Component {
         const toastDOM = (
           <TouchableWithoutFeedback
             onPress={() => {
-              console.log("pressed");
               this.openFile(notification.data.fileUri);
             }}
             style={{ padding: "10", backgroundColor: "green" }}

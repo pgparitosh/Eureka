@@ -13,7 +13,6 @@ export default class PdfViewer extends Component {
 
     componentDidMount() {
         const { params } = this.props.navigation.state;
-        console.log(params.url);
         this.setState({ document: params.url });
     }
 

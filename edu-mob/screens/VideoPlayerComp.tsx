@@ -443,7 +443,6 @@ export default class VideoPlayerComp extends React.Component<Props, State> {
         if (status.isBuffering) {
             return PlaybackStates.Buffering
         }
-
         return PlaybackStates.Paused
     }
 

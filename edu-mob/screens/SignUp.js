@@ -18,7 +18,7 @@ const { width, height } = Dimensions.get("window");
 
 export default class SignUp extends Component {
   state = {
-    mobile: '',
+    mobile: "",
     firstName: "",
     lastName: "",
     password: "",
@@ -41,8 +41,6 @@ export default class SignUp extends Component {
     if (firstName.trim() === "") errors.push("firstName");
     if (lastName.trim() === "") errors.push("lastName");
 
-    this.setState({ errors, loading: false });
-
     if (!errors.length) {
       var inputObj = {
         json: {
@@ -51,40 +49,42 @@ export default class SignUp extends Component {
           mobile: mobile,
           password: password,
           installation_id: Constants.installationId,
-          device_name: Constants.deviceName,
+          device_name: Constants.deviceName
         }
       };
-      AuthService.signUp(JSON.stringify(inputObj)).then(res => {
-        if(res.status){
-        Alert.alert(
-          "Success!",
-          "Your account has been created",
-          [
-            {
-              text: "Continue",
-              onPress: () => {
-                navigation.navigate("Browse");
-              }
-            }
-          ],
-          { cancelable: false }
-        );
-        }
-        else {
+      AuthService.signUp(JSON.stringify(inputObj))
+        .then(res => {
+          if (res.status) {
+            this.setState({ loading: false });
+            Alert.alert(
+              "Success!",
+              "Your account has been created",
+              [
+                {
+                  text: "Continue",
+                  onPress: () => {
+                    navigation.navigate("BasicDetails");
+                  }
+                }
+              ],
+              { cancelable: false }
+            );
+          } else {
+            this.setState({ loading: false });
+            Alert.alert("Failed!", res.message);
+          }
+        })
+        .catch(error => {
+          console.log(error);
+          this.setState({ loading: false });
           Alert.alert(
             "Failed!",
-            res.message
+            "Something went wrong. Please try again after some time."
           );
-        }
-      }).catch((error) => {
-        console.log(error);
-        Alert.alert(
-          "Failed!",
-          "Something went wrong. Please try again after some time."
-        );
-      });
+        });
+    } else {
+      this.setState({ errors, loading: false });
     }
-    this.setState({ loading: false });
   }
 
   render() {

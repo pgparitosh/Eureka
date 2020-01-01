@@ -21,6 +21,11 @@ const VALID_MOBILE = "";
 const VALID_PASSWORD = "";
 
 export default class Login extends Component {
+  constructor(props) {
+    super(props);
+    this.handleLogin = this.handleLogin.bind(this);
+  }
+
   state = {
     mobile: VALID_MOBILE,
     password: VALID_PASSWORD,
@@ -29,12 +34,12 @@ export default class Login extends Component {
   };
 
   async handleLogin() {
+    this.setState({ loading: true });
     const { navigation } = this.props;
     const { mobile, password } = this.state;
     const errors = [];
 
     Keyboard.dismiss();
-    this.setState({ loading: true });
 
     // check with backend API or with some static data
     if (mobile.trim() === "") {
@@ -51,7 +56,7 @@ export default class Login extends Component {
           username: mobile,
           password: password,
           installation_id: Constants.installationId,
-          device_name: Constants.deviceName,
+          device_name: Constants.deviceName
         }
       };
       AuthService.login(JSON.stringify(inputObj))
@@ -64,25 +69,28 @@ export default class Login extends Component {
                 navigation.navigate("BasicDetails");
               })
               .catch(error => {
+                this.setState({ loading: false });
                 console.log(error);
               });
           } else {
-            Alert.alert(res.message);
+            this.setState({ loading: false });
+            Alert.alert("Failed!", res.message);
           }
         })
         .catch(error => {
           console.log(error);
+          this.setState({ loading: false });
           Alert.alert("An error has occured. Please try again.");
         });
+    } else {
+      this.setState({ errors, loading: false });
     }
-    this.setState({ errors, loading: false });
   }
 
   render() {
     const { navigation } = this.props;
     const { loading, errors } = this.state;
     const hasErrors = key => (errors.includes(key) ? styles.hasErrors : null);
-
     return (
       <KeyboardAvoidingView style={styles.login} behavior="padding">
         <Block padding={[0, theme.sizes.base * 2]}>
@@ -90,16 +98,6 @@ export default class Login extends Component {
             Login
           </Text>
           <Block middle>
-            <Image
-              source={require("../assets/images/illustration_3.png")}
-              resizeMode="contain"
-              style={{
-                width,
-                height: height / 3,
-                alignSelf: "center",
-                marginBottom: 10
-              }}
-            />
             <Input
               label="Mobile Number"
               error={hasErrors("mobile")}
@@ -117,7 +115,7 @@ export default class Login extends Component {
               onChangeText={text => this.setState({ password: text })}
             />
             <Button gradient onPress={() => this.handleLogin()}>
-              {loading ? (
+              {this.state.loading ? (
                 <ActivityIndicator size="small" color="white" />
               ) : (
                 <Text bold white center>

@@ -74,16 +74,6 @@ export default class Forgot extends Component {
             Forgot
           </Text>
           <Block middle>
-            <Image
-              source={require("../assets/images/illustration_1.png")}
-              resizeMode="contain"
-              style={{
-                width,
-                height: height / 3,
-                alignSelf: "center",
-                marginBottom: 10,
-              }}
-            />
             <Input
               label="Email"
               error={hasErrors("email")}

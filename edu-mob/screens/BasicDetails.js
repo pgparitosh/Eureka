@@ -11,8 +11,8 @@ export default class BasicDetails extends Component {
   }
 
   state = {
-    firstName: "Paritosh",
-    lastName: "Gohel",
+    firstName: "",
+    lastName: "",
     gender: "",
     academicPreference: "",
     errors: []

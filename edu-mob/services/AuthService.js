@@ -72,6 +72,18 @@ const AuthService = {
         return response.data;
       })
       .catch(e => console.log(e));
+  },
+
+  // the below method is used to get the banners on the welcome screen
+  async getBanners() {
+    return instance({
+      method: "get",
+      url: "frontside/api/GetBanners"
+    })
+      .then(response => {
+        return response.data;
+      })
+      .catch(e => console.log(e));
   }
 };
 

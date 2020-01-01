@@ -6,6 +6,9 @@ import {
   ScrollView,
   TouchableOpacity
 } from "react-native";
+import GestureRecognizer, {
+  swipeDirections
+} from "react-native-swipe-gestures";
 
 import { Card, Badge, Button, Block, Text } from "../components";
 import { theme, mocks } from "../constants";
@@ -27,12 +30,65 @@ class CourseList extends Component {
 
   constructor(props) {
     super(props);
+    this.onSwipe = this.onSwipe.bind(this);
+    this.onSwipeDown = this.onSwipeDown.bind(this);
+    this.onSwipeLeft = this.onSwipeLeft.bind(this);
+    this.onSwipeRight = this.onSwipeRight.bind(this);
+    this.onSwipeUp = this.onSwipeUp.bind(this);
   }
 
   componentDidMount() {
     const { params } = this.props.navigation.state;
     // make service call
     this.setState({ course: params.course });
+  }
+
+  onSwipeUp(gestureState) {
+    this.setState({ myText: "You swiped up!" });
+  }
+
+  onSwipeDown(gestureState) {
+    this.setState({ myText: "You swiped down!" });
+  }
+
+  onSwipeLeft(gestureState) {
+    this.setState({ myText: "You swiped left!" });
+  }
+
+  onSwipeRight(gestureState) {
+    this.setState({ myText: "You swiped right!" });
+  }
+
+  onSwipe(gestureName, gestureState) {
+    const { SWIPE_UP, SWIPE_DOWN, SWIPE_LEFT, SWIPE_RIGHT } = swipeDirections;
+    this.setState({ gestureName: gestureName });
+    switch (gestureName) {
+      case SWIPE_UP:
+        break;
+      case SWIPE_DOWN:
+        break;
+      case SWIPE_LEFT: {
+        if (this.state.active === "Course Details") {
+          this.handleTab("Videos");
+          break;
+        }
+        if (this.state.active === "Videos") {
+          this.handleTab("Documents");
+          break;
+        }
+        if (this.state.active === "Documents") break;
+      }
+      case SWIPE_RIGHT:
+        if (this.state.active === "Course Details") break;
+        if (this.state.active === "Videos") {
+          this.handleTab("Course Details");
+          break;
+        }
+        if (this.state.active === "Documents") {
+          this.handleTab("Videos");
+          break;
+        }
+    }
   }
 
   renderTabData() {
@@ -89,22 +145,39 @@ class CourseList extends Component {
   }
 
   render() {
+    const config = {
+      velocityThreshold: 0.3,
+      directionalOffsetThreshold: 80
+    };
     const tabs = ["Course Details", "Videos", "Documents"];
     const course = this.state.course;
 
     if (course === null) return null;
     return (
-      <Block>
-        <Block flex={false} row center space="between" style={styles.header}>
-          <Text h3 bold>
-            {course.name}
-          </Text>
+      <GestureRecognizer
+        onSwipe={this.onSwipe}
+        onSwipeUp={this.onSwipeUp}
+        onSwipeDown={this.onSwipeDown}
+        onSwipeLeft={this.onSwipeLeft}
+        onSwipeRight={this.onSwipeRight}
+        config={config}
+        style={{
+          flex: 1,
+          backgroundColor: this.state.backgroundColor
+        }}
+      >
+        <Block>
+          <Block flex={false} row center space="between" style={styles.header}>
+            <Text h3 bold>
+              {course.name}
+            </Text>
+          </Block>
+          <Block flex={false} row space="between" style={styles.tabs}>
+            {tabs.map(tab => this.renderTab(tab))}
+          </Block>
+          {this.renderTabData()}
         </Block>
-        <Block flex={false} row space="between" style={styles.tabs}>
-          {tabs.map(tab => this.renderTab(tab))}
-        </Block>
-        {this.renderTabData()}
-      </Block>
+      </GestureRecognizer>
     );
   }
 }
